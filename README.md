@@ -3,7 +3,7 @@
 
 Predicting Match Outcomes from Early Game Data
 
-**Project Description**
+## Project Description
 
 League of Legends is a competitive 5 vs 5 game where teams gain advantages through gold, experience, kills, objectives, towers, and other in game events. Although players often describe games as being "won" or "lost" early, it is usually not always clear how early the final result actually becomes predictable. 
 
@@ -17,11 +17,11 @@ The project forcuses on 2 main questions:
 1. How accurately can the winner of a League of Legends match be predicted at 5, 10, and 15 minutes?
 2. Which early game features are most strongly associated with winning?
 
-**Motivation**
+## Motivation
 
 I chose this project because I regularly play League of Legends in my free time and am interested in understanding the game through data instead of relying only on player intuition. I also realized that a League of Legends match can be a useful data science problem because no single statistic completely describes which team is winning. A team could have more kills but less gold, more gold but fewer objectives, or an early advantage that disappears later in game. I've noticed in my own games that I feel like we were winning in the early game but ended up losing the match. 
 
-**Project Goals**
+## Project Goals
 
 Primary Goal
 
@@ -48,7 +48,7 @@ Are gold advantages in some roles more informative than others?
 How much does model confidence increase between 5, 10, and 15 minutes?
 Because this project uses observational match data, these results will be interpreted as associations rather than proof of causation.
 
-**Data Collection Plan**
+## Data Collection Plan
 
 Data Source
 
@@ -64,7 +64,7 @@ Game Mode: Ranked Solo/Duo
 Patch Range: Limited set of recent patches
 Target Size: Around 5000-10000 matches
 
-**Collection Method**
+## Collection Method
 
 A Python program will be written to automatically collect data from the Riot Games API. The collection process will follow:
 
@@ -103,14 +103,14 @@ The prediction target will be:
 blue_win = 1 if Blue wins
 blue_win = 0 if Red wins
 
-**Preliminary Modeling Plan**
+## Preliminary Modeling Plan
 
 The project will begin with a simple baseline before testing more advanced models.
 
 Models will most likely include:
 Baseline, Logistic Regression, Random Forest, and Gradient Boosted Trees.
 
-**Model Evaluation Plan**
+## Model Evaluation Plan
 
 The collected matches will be divided into separate training, validation, and testing groups.
 
@@ -121,7 +121,7 @@ The split will look something like this:
 The split will occur at the match level, meaning that all observations from the same game must remain in the same partition. For example, the 5, 10, and 15 minute data from one match will never be divided between training and testing. If practical, the split will also be chronological so that models are trained on older matches and evaluated on newer matches. The final test data will not be used while selecting models or features.
 The most important comparison will be how prediction performance changes between the 5, 10, and 15 minute models.
 
-**Planned Visualizations**
+## Planned Visualizations
 
 Prediction Performance Over Time
 
@@ -135,7 +135,7 @@ Match Win Probability Visualization
 
 As an extension, the model will be used to visualize predicted win probability throughout an individual match. Important events such as dragons, towers, first blood, or baron could be marked on the graph to show how the predicted outcome changes throughout the game.
 
-**Project Timeline**
+## Project Timeline
 
 The project is planned over approximately 8 weeks:
 Week 1 - Finalize Proposal
@@ -147,7 +147,7 @@ Week 6 - Train and compare Logistic Regression, Random Forest, and gradient boos
 Week 7 - Analyze model performance, feature importance, and win probability visualizations
 Week 8 - Final testing, reproducibility checks, and project cleanup
 
-**Challenges and Fallback Plan**
+## Challenges and Fallback Plan
 
 Possible challenges include Riot API rate limits, incomplete match data, changes between League patches, and the time required to collect thousands of matches. 
 
@@ -156,6 +156,6 @@ If the original project scope becomes too large, the fallback project will focus
 The minimum successful version of the project will collect several thousand Ranked Solo/Duo matches, extract features at approximately 5, 10, and 15 minutes, train a baseline model and at least 1 machine learning model, compare prediction performance across the 3 timestamps, analyze which early game features are most informative, and create clear visualization of the results.
 More advanced analysis, such as continuous win probability graphs or detailed role specific modeling, can be treated as extensions if time allows.
 
-**Repository**
+## Repository
 
 The project will be maintained using Git and GitHub throughout development. The repository will contain the code needed for data collection, data cleaning, feature extraction, model training, model evaluation, and visualization. The final repository will also include documentation explaining how to install dependencies and reproduce the results. Riot API credentials and other private information will not be committed to GitHub.
