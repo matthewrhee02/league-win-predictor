@@ -78,7 +78,7 @@ Data Cleaning and Feature Extraction
 
 Collected matches will be cleaned before being used for modeling.
 
-Possible cleaning steps will be removing duplicate matches, removing non Ranked Solo/Duo matches, Removing remakes or unusually short matches, removing matches with missing timeline data, removing incomplete or invalid API responses. restricting matches to the selected patch range, and ensuring usable 5, 10, and 15 minute timeline frames exist.
+Possible cleaning steps will be removing duplicate matches, removing non Ranked Solo/Duo matches, removing remakes or unusually short matches, removing matches with missing timeline data, removing incomplete or invalid API responses, restricting matches to the selected patch range, and ensuring usable 5, 10, and 15 minute timeline frames exist.
 
 For each valid match, features will then be calculated at approximately 5, 10, and 15 minutes. Many features will be represented as the difference between 2 teams.
 
