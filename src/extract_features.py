@@ -16,6 +16,12 @@ for match_file in sorted(raw_folder.glob("*_match.json")):
         continue
     with open(match_file, "r", encoding="utf-8") as file:
         match_data = json.load(file)
+    version = match_data["info"].get("gameVersion", "")
+    parts = version.split(".")
+    patch = parts[0] + "." + parts[1]
+    if patch != "16.20":
+        print("Skipping older patch:", match_id)
+        continue
     with open(timeline_file, "r", encoding="utf-8") as file:
         timeline_data = json.load(file)
 
