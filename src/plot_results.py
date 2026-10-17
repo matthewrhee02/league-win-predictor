@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 minutes = [5, 10, 15]
-majority_accuracy = [47.06, 47.06, 47.06]
-gold_accuracy = [52.94, 58.82, 82.35]
-logistic_accuracy = [58.82, 58.82, 70.59]
+majority_accuracy = [40.00, 40.00, 40.00]
+gold_accuracy = [60.00, 66.67, 75.56]
+logistic_accuracy = [62.22, 62.22, 73.33]
 
 plt.figure(figsize=(9, 6))
 plt.plot(minutes, majority_accuracy, marker='o',
@@ -13,7 +13,7 @@ plt.plot(minutes, gold_accuracy, marker="o",
          label="Gold Baseline")
 plt.plot(minutes, logistic_accuracy, marker="o",
          label="Logistic Regression")
-plt.title("League of Legends Win Prediction Accuracy")
+plt.title("League of Legends Win Prediction Accuracy (300 Matches)")
 plt.xlabel("Game Time (Minutes)")
 plt.ylabel("Validation Accuracy (%)")
 plt.xticks(minutes)
