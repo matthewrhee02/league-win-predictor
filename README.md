@@ -159,3 +159,50 @@ More advanced analysis, such as continuous win probability graphs or detailed ro
 ## Repository
 
 The project will be maintained using Git and GitHub throughout development. The repository will contain the code needed for data collection, data cleaning, feature extraction, model training, model evaluation, and visualization. The final repository will also include documentation explaining how to install dependencies and reproduce the results. Riot API credentials and other private information will not be committed to GitHub.
+
+## Progress Update - October 2026
+
+## Data Collection and Processing
+
+So far, I have collected 312 League of Legends matches using the Riot Games API. Out of these, 300 matches are from the most recent patch 16.20 and are included in the current dataset. For each match, I extracted game statistics at approximately 5, 10, and 15 minutes. This gives me 900 observations from 300 unique matches.
+
+The features include gold difference, XP difference, lane CS difference, jungle CS difference, kill difference, tower difference, dragon difference, Void Grub difference, first blood, first tower, and first dragon.
+
+I divided the matches chronologically into 3 groups:<br>
+Training: 210 matches (70%)<br>
+Validation: 45 matches (15%)<br>
+Testing: 45 matches (15%)<br>
+All 3 observations from the same match stay in the same group. I also saved the match IDs so that the split remains consistent. The final test set has not been used for evaluation yet.
+
+## Preliminary Model Results
+
+I implemented 3 prediction methods:<br>
+Majority baseline: Always predicts the side that won more frequently in the training set.<br>
+Gold baseline: Predicts the team with more gold at the selected minute.<br>
+Logistic Regression: Uses all 11 extracted features to predict the winning team.<br>
+The current validation accuracy results are:<br>
+Majority Baseline - 40.00% for 5 min | 40.00% for 10 min | 40.00% for 15 min<br>
+Gold Baseline - 60.00% for 5 min | 66.67% for 10 min | 75.56% for 15 min<br>
+Logistic Regression - 62.22% for 5 min | 62.22% for 10 min | 73.33% for 15 min
+
+The preliminary results suggest that match outcomes become easier to predict as the game progresses. The gold baseline and Logistic Regression model perform similarly, while the gold baseline achieving slightly higher accuracy at 10 and 15 minutes. I also evaluated Logistic Regression using ROC-AUC, log loss, and Brier score. Its ROC-AUC improved from 0.7366 at 5 minutes to 0.7963 at 15 minutes.
+
+## Confidence Intervals
+
+I used 5000 bootstrap samples to estimate 95% confidence intervals for validation accuracy. For the gold baseline, accuracy improved from 60.00% at 5 minutes to 75.56% at 15 minutes. The estimated improvement was 15.56 percentage points with a 95% bootstrap confidence interval 0.00 to 31.11 percentage points. For Logistic Regression, accuracy improved from 62.22% at 5 minutes to 73.33% at 15 minutes. The estimated improvement was 11.11 percentage points with a 95% bootstrap confidence interval of -2.22 to 24.44 percentage points. Because these intervals include or touch 0, I cannot confidently conclude that the improvements are statistically significant yet. I plan to evaluate this further with a larger dataset.
+
+## Data Validation
+
+I created scripts to check the processed dataset against the original Riot timeline JSON files. The dataset currently has no missing values or duplicate match-minute observations. All 300 matches have observations at all 3 timestamps. The numerical feature audit and first event audit both reported 0 mismatches across 900 observations. The current snapshots are slightly after the requested minutes, with a maximum difference of 420 milliseconds. I am treating these as approximate 5, 10, and 15 minute snapshots. The event audits also found that First Blood was recorded by 5 minutes in every sampled match and First Dragon by 15 minutes in every sampled match. I plan to inspect these unusually consistent patterns more closely before drawing conclusions from them.
+
+## Current Limitations and Next Steps
+
+The current results are preliminary because the validation set contains only 45 matches. Matches may also share players, which means the observations may not be completely independent.
+
+My next steps are to:<br>
+Check the earliest objective event timestamps and investigate unusual event distributions.<br>
+Expand the dataset while keeping the final test set fixed.<br>
+Add more exploratory visualizations.<br>
+Test additional models such as Random Forest.<br>
+Investigate which early game features are most useful for predicting the winner.<br>
+Perform final evaluation on the untouched test set after model selection is complete.<br>
