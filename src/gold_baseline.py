@@ -1,6 +1,5 @@
 import csv
 import json
-from pathlib import Path
 
 with open("data/processed/match_features.csv", "r") as file:
     reader = csv.DictReader(file)
@@ -12,38 +11,25 @@ for row in rows:
     minute = int(row["minute"])
     features[(match_id, minute)] = row
 
-match_ids = set()
-for row in rows:
-    match_ids.add(row["match_id"])
+with open("splits/match_split.json", "r") as file:
+    splits = json.load(file)
 
-matches = []
-for match_id in match_ids:
-    match_file = Path("data/raw") / f"{match_id}_match.json"
-    with open(match_file, "r") as file:
-        match_data = json.load(file)
-    start_time = match_data["info"]["gameStartTimestamp"]
-    matches.append((start_time, match_id))
-matches.sort()
+train_ids = splits["train"]
+val_ids = splits["validation"]
+test_ids = splits["test"]
 
-total = len(matches)
-train_end = int(total * 0.70)
-val_end = train_end + int(total * 0.15)
-train_matches = matches[:train_end]
-val_matches = matches[train_end:val_end]
-test_matches = matches[val_end:]
-
-print("Training matches:", len(train_matches))
-print("Validation matches:", len(val_matches))
-print("Test matches:", len(test_matches))
+print("Training matches:", len(train_ids))
+print("Validation matches:", len(val_ids))
+print("Test matches:", len(test_ids))
 
 blue_wins = 0
 
-for start_time, match_id in train_matches:
+for match_id in train_ids:
     row = features[(match_id, 5)]
     if int(row["blue_win"]) == 1:
         blue_wins += 1
 
-if blue_wins >= len(train_matches) / 2:
+if blue_wins >= len(train_ids) / 2:
     majority_prediction = 1
 else:
     majority_prediction = 0
@@ -51,7 +37,7 @@ else:
 for minute in [5, 10, 15]:
     gold_correct = 0
     majority_correct = 0
-    for start_time, match_id in val_matches:
+    for match_id in val_ids:
         row = features[(match_id, minute)]
         gold_diff = float(row["gold_diff"])
         actual_winner = int(row["blue_win"])
@@ -65,8 +51,8 @@ for minute in [5, 10, 15]:
             gold_correct += 1
         if majority_prediction == actual_winner:
             majority_correct += 1
-    gold_accuracy = gold_correct / len(val_matches) * 100
-    majority_accuracy = majority_correct / len(val_matches) * 100
+    gold_accuracy = gold_correct / len(val_ids) * 100
+    majority_accuracy = majority_correct / len(val_ids) * 100
 
     print()
     print("Minute:", minute)

@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
@@ -7,27 +6,16 @@ from sklearn.metrics import accuracy_score, roc_auc_score, log_loss, brier_score
 
 data = pd.read_csv("data/processed/match_features.csv")
 
-matches = []
-for match_id in data["match_id"].unique():
-    match_file = Path("data/raw") / f"{match_id}_match.json"
-    with open(match_file, "r", encoding="utf-8") as file:
-        match_data = json.load(file)
-    start_time = match_data["info"]["gameStartTimestamp"]
-    matches.append((start_time, match_id))
-matches.sort()
+with open("splits/match_split.json", "r") as file:
+    splits = json.load(file)
 
-total = len(matches)
-train_end = int(total * 0.70)
-val_end = train_end + int(total * 0.15)
-train_matches = matches[:train_end]
-val_matches = matches[train_end:val_end]
-test_matches = matches[val_end:]
-train_ids = [match_id for start_time, match_id in train_matches]
-val_ids = [match_id for start_time, match_id in val_matches]
+train_ids = splits["train"]
+val_ids = splits["validation"]
+test_ids = splits["test"]
 
 print("Training matches:", len(train_ids))
 print("Validation matches:", len(val_ids))
-print("Test matches:", len(test_matches))
+print("Test matches:", len(test_ids))
 
 features = [
     "gold_diff",
