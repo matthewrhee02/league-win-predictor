@@ -206,3 +206,32 @@ Add more exploratory visualizations.<br>
 Test additional models such as Random Forest.<br>
 Investigate which early game features are most useful for predicting the winner.<br>
 Perform final evaluation on the untouched test set after model selection is complete.<br>
+
+## Progress Update - November 2026
+
+## Exploratory Data Analysis
+
+Since the October check-in, I created additional visualizations to explore the relationship between early-game statistics and match outcomes. I first compared gold differences between matches won by Blue and Red teams at 5, 10, and 15 minutes. The median gold difference for matches won by Blue increased from +264 at 5 minutes to +1734.5 at 15 minutes. For matches won by Red, the median changed from -293 to -1815. These results suggest that teams that eventually win generally have larger gold advantages as the game progresses.
+
+## Random Forest Model
+
+I also implemented a Random Forest model using the same 11 features as Logistic Regression. I trained separate models at 5, 10, and 15 minutes using the same training and validation matches from October.
+
+Majority Baseline - 40.00% (5 minutes) | 40.00% (10 minutes) | 40.00% (15 minutes)<br>
+Gold Baseline - 60.00% (5 minutes) | 66.67% (10 minutes) | 75.56% (15 minutes)<br>
+Logistic Regression - 62.22% (5 minutes) | 62.22% (10 minutes) | 73.33% (15 minutes)<br>
+Random Forest - 57.78% (5 minutes) | 66.67% (10 minutes) | 73.33% (15 minutes)
+
+Random Forest performed similarly to Logistic Regression in terms of accuracy. However, Random Forest achieved higher ROC-AUC socres at 10 and 15 minutes, respectively. 
+
+## Feature Importance
+
+I used permutation importance to investigate which features contributed the most to Random Forest predictions. The results shows that gold difference ranked highest at all three timestamps. At 5 minutes, CS difference and kill difference were the next most useful features. At 10 minutes, kill difference and XP difference ranked second and third. At 15 minutes, XP difference and CS difference ranked second and third. These results suggest that gold difference is an important predictor, although the importance estimates may be affected by correlated features and the small validation sample. 
+
+## Additional Data Validation
+
+I also checked the timestamps of First Blood and First Dragon events in the original Riot timeline files. The reported events were consistent with the earlier first_event audit results. However, there are still some timestamp-handling details I want to verify before finalizing the dataset.
+
+## Next Steps
+
+My next steps are to imporve the reliability of my results, finish checking the timestamps, and compare additional models such as XGBoost. I also want to investigate how well models generalize to matches from newer patches. After choosing my final modleing approach, I plan to evaluate it using the untouched test set and finish the reproducibility instructions for the project.
