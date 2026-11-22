@@ -5,6 +5,7 @@ minutes = [5, 10, 15]
 majority_accuracy = [40.00, 40.00, 40.00]
 gold_accuracy = [60.00, 66.67, 75.56]
 logistic_accuracy = [62.22, 62.22, 73.33]
+random_forest_accuracy = [57.78, 66.67, 73.33]
 
 plt.figure(figsize=(9, 6))
 plt.plot(minutes, majority_accuracy, marker='o',
@@ -13,6 +14,8 @@ plt.plot(minutes, gold_accuracy, marker="o",
          label="Gold Baseline")
 plt.plot(minutes, logistic_accuracy, marker="o",
          label="Logistic Regression")
+plt.plot(minutes, random_forest_accuracy, marker="o",
+         label="Random Forest")
 plt.title("League of Legends Win Prediction Accuracy (300 Matches)")
 plt.xlabel("Game Time (Minutes)")
 plt.ylabel("Validation Accuracy (%)")
