@@ -232,6 +232,8 @@ I used permutation importance to investigate which features contributed the most
 
 I also checked the timestamps of First Blood and First Dragon events in the original Riot timeline files. The reported events were consistent with the earlier first_event audit results. However, there are still some timestamp-handling details I want to verify before finalizing the dataset.
 
+I also checked whether any events occurred between the exact 5, 10, and 15 minute timestamps and the selected Riot timeline snapshots. Out of 900 observations, 12 included events that happened slightly after the exact minute. The largest timestamp difference was 420 milliseconds. Because the game statistics come from Riot's recorded frames, I am treating these as approximate 5, 10, and 15 minute predictions rather than exact-minute predictions. All included events occurred by the actual snapshot time. 
+
 ## Next Steps
 
 My next steps are to imporve the reliability of my results, finish checking the timestamps, and compare additional models such as XGBoost. I also want to investigate how well models generalize to matches from newer patches. After choosing my final modleing approach, I plan to evaluate it using the untouched test set and finish the reproducibility instructions for the project.
