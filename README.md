@@ -237,3 +237,239 @@ I also checked whether any events occurred between the exact 5, 10, and 15 minut
 ## Next Steps
 
 My next steps are to imporve the reliability of my results, finish checking the timestamps, and compare additional models such as XGBoost. I also want to investigate how well models generalize to matches from newer patches. After choosing my final modleing approach, I plan to evaluate it using the untouched test set and finish the reproducibility instructions for the project.
+
+## Final Project Results
+
+### Final Dataset
+
+The final dataset consists of 300 Ranked Solo/Duo matches from the North America region with game version 16.20. For each match, I extracted statistics at approximately 5, 10, and 15 minutes, giving a total of 900 observations.
+
+The dataset contains 148 matches won by Blue and 152 matches won by Red. There are no missing values, duplicate observations, or matches with missing snapshots.
+
+The final dataset is smaller than originally planned. I decided to focus on validating the existing data and completing the model comparisons rather than expanding the dataset.
+
+### Data Processing and Validation
+
+The 11 features used in the full models are:
+
+- `gold_diff` - Gold difference
+- `xp_diff` - XP difference
+- `cs_diff` - Lane CS difference
+- `jungle_cs_diff` - Jungle CS difference
+- `kill_diff` - Kill difference
+- `tower_diff` - Tower difference
+- `dragon_diff` - Dragon difference
+- `grub_diff` - Void Grub difference
+- `first_blood` - Team that earned first blood
+- `first_tower` - Team that destroyed the first tower
+- `first_dragon` - Team that killed the first dragon
+
+The differences are calculated as Blue team values minus Red team values. The prediction target is `blue_win`, where 1 represents a Blue team win and 0 represents a Red team win.
+
+I checked the processed features against the original timeline files and found no mismatches in the numerical feature and first event audits. I also checked the event timestamps. There were 1029 events with a timestamp of 0, but none were champion kills, special champion kills, monster kills, or building kills.
+
+The maximum difference between the requested minute and the selected snapshot was 420 milliseconds. There were 12 observations with events between the exact minute and the selected snapshot. Because of this, the project uses approximate 5, 10, and 15 minute predictions based on the actual timeline frames.
+
+### Exploratory Data Analysis
+
+I compared the gold differences of matches won by Blue and Red at each of the 3 timestamps.
+
+| Winning Team | 5 Minutes | 10 Minutes | 15 Minutes |
+|---|---:|---:|---:|
+| Blue (median gold difference) | 264 | 718 | 1734.5 |
+| Red (median gold difference) | -293 | -1073.5 | -1815 |
+
+The results suggest that teams that eventually win generally have larger gold advantages as the game progresses.
+
+![Gold Distribution](figures/gold_distribution.png)
+
+### Final Modeling Methods
+
+I implemented 6 prediction methods:
+
+- Majority Baseline - Predicts the team side that won more frequently in the training set.
+- Gold Baseline - Predicts the team with more gold at the selected minute. Ties use the majority baseline.
+- Gold-only Logistic Regression - Uses only gold difference to predict the winning team.
+- Full Logistic Regression - Uses all 11 extracted features.
+- Random Forest - Uses 100 decision trees with a maximum depth of 5 and a minimum of 3 samples per leaf.
+- XGBoost - Uses 100 boosted trees with a maximum depth of 3, a learning rate of 0.05, and row and feature sampling rates of 0.8.
+
+For both Logistic Regression models, I standardized the features using the training data. The same scaling was then applied to the evaluation data.
+
+### Validation Results
+
+During model development, I divided the matches chronologically into 3 groups:
+
+- Training: 210 matches (70%)
+- Validation: 45 matches (15%)
+- Testing: 45 matches (15%)
+
+All 3 observations from the same match were kept in the same group. The match IDs for each group were saved so that all models used the same split.
+
+| Model | 5 Minutes | 10 Minutes | 15 Minutes |
+|---|---:|---:|---:|
+| Majority Baseline | 40.00% | 40.00% | 40.00% |
+| Gold Baseline | 60.00% | 66.67% | 75.56% |
+| Gold-only Logistic Regression | 57.78% | 60.00% | 71.11% |
+| Full Logistic Regression | 62.22% | 62.22% | 73.33% |
+| Random Forest | 57.78% | 66.67% | 73.33% |
+| XGBoost | 62.22% | 66.67% | 73.33% |
+
+![Validation Accuracy Comparison](figures/accuracy_comparison.png)
+
+I used 5000 paired bootstrap samples to compare the validation accuracy of the gold baseline, full Logistic Regression, and Random Forest. All of the 95% confidence intervals for their accuracy differences included or touched 0. I could not confidently conclude that one method performed better than the others.
+
+### Final Test Evaluation
+
+After completing the model comparisons, I combined the training and validation sets to train the final models using 255 matches. I then evaluated them using the original 45 test matches.
+
+Separate models were trained at approximately 5, 10, and 15 minutes. The model settings were not changed after observing the final test results.
+
+### Final Test Accuracy
+
+| Model | 5 Minutes | 10 Minutes | 15 Minutes |
+|---|---:|---:|---:|
+| Majority Baseline | 51.11% | 51.11% | 51.11% |
+| Gold Baseline | 62.22% | 66.67% | 77.78% |
+| Gold-only Logistic Regression | 60.00% | 66.67% | 80.00% |
+| Full Logistic Regression | 53.33% | 64.44% | 75.56% |
+| Random Forest | 66.67% | 60.00% | 73.33% |
+| XGBoost | 73.33% | 60.00% | 73.33% |
+
+![Final Test Accuracy](figures/final_test_accuracy.png)
+
+At 5 minutes, XGBoost achieved the highest accuracy of 73.33%. At 10 minutes, the gold baseline and gold-only Logistic Regression both achieved an accuracy of 66.67%. At 15 minutes, gold-only Logistic Regression achieved the highest accuracy of 80.00%.
+
+Most prediction methods performed better at 15 minutes than at 5 minutes.
+
+### Additional Evaluation Metrics
+
+I also used ROC-AUC, log loss, and Brier score to evaluate the machine learning models. A higher ROC-AUC and lower log loss and Brier score are generally better.
+
+#### ROC-AUC
+
+| Model | 5 Minutes | 10 Minutes | 15 Minutes |
+|---|---:|---:|---:|
+| Gold-only Logistic Regression | 0.6640 | 0.7470 | 0.8538 |
+| Full Logistic Regression | 0.6344 | 0.7095 | 0.7905 |
+| Random Forest | 0.6621 | 0.6462 | 0.8063 |
+| XGBoost | 0.6640 | 0.6542 | 0.7727 |
+
+#### Log Loss
+
+| Model | 5 Minutes | 10 Minutes | 15 Minutes |
+|---|---:|---:|---:|
+| Gold-only Logistic Regression | 0.6405 | 0.5967 | 0.4992 |
+| Full Logistic Regression | 0.6626 | 0.6356 | 0.5558 |
+| Random Forest | 0.6758 | 0.6685 | 0.5438 |
+| XGBoost | 0.6905 | 0.6789 | 0.5648 |
+
+#### Brier Score
+
+| Model | 5 Minutes | 10 Minutes | 15 Minutes |
+|---|---:|---:|---:|
+| Gold-only Logistic Regression | 0.2255 | 0.2051 | 0.1636 |
+| Full Logistic Regression | 0.2363 | 0.2195 | 0.1868 |
+| Random Forest | 0.2378 | 0.2370 | 0.1822 |
+| XGBoost | 0.2384 | 0.2391 | 0.1917 |
+
+Gold-only Logistic Regression achieved the highest ROC-AUC and the lowest log loss and Brier score at 15 minutes. Although XGBoost achieved the highest accuracy at 5 minutes, its other evaluation metrics were not as strong.
+
+### Final Confidence Intervals
+
+I calculated 95% Wilson confidence intervals for the test accuracy of each prediction method. The results at 15 minutes were:
+
+| Model | Correct Predictions | Accuracy | 95% Confidence Interval |
+|---|---:|---:|---|
+| Majority Baseline | 23/45 | 51.11% | 37.00% to 65.04% |
+| Gold Baseline | 35/45 | 77.78% | 63.73% to 87.46% |
+| Gold-only Logistic Regression | 36/45 | 80.00% | 66.18% to 89.10% |
+| Full Logistic Regression | 34/45 | 75.56% | 61.33% to 85.76% |
+| Random Forest | 33/45 | 73.33% | 58.96% to 84.04% |
+| XGBoost | 33/45 | 73.33% | 58.96% to 84.04% |
+
+Because the test set only contains 45 matches, the confidence intervals are relatively wide. Gold-only Logistic Regression achieved the highest observed accuracy, but these individual intervals do not establish whether it is better than the other models.
+
+### Feature Importance
+
+I used permutation importance on the validation set to investigate which features were most useful for Random Forest predictions. I shuffled each feature 20 times and measured the average decrease in ROC-AUC.
+
+| Timestamp | Most Important | Second | Third |
+|---|---|---|---|
+| 5 Minutes | Gold Difference | CS Difference | Kill Difference |
+| 10 Minutes | Gold Difference | Kill Difference | XP Difference |
+| 15 Minutes | Gold Difference | XP Difference | CS Difference |
+
+![5 Minute Feature Importance](figures/feature_importance_5.png)
+
+![10 Minute Feature Importance](figures/feature_importance_10.png)
+
+![15 Minute Feature Importance](figures/feature_importance_15.png)
+
+Gold difference had the highest importance score at all 3 timestamps. Other features such as XP difference, kill difference, and CS difference also contributed to predictions. These results describe the trained model and may be affected by correlated features and the small validation set.
+
+### Conclusion
+
+The primary goal of this project was to determine how early the winner of a League of Legends match can be predicted.
+
+The results generally showed that match outcomes became easier to predict as the game progressed. For example, gold-only Logistic Regression improved from 60.00% accuracy at 5 minutes to 66.67% at 10 minutes and 80.00% at 15 minutes.
+
+One of the most interesting findings was that more complicated models did not consistently perform better than simpler models. The gold baseline and gold-only Logistic Regression performed competitively with Random Forest and XGBoost despite only using gold difference.
+
+The feature importance results also showed that gold difference was the most useful feature for Random Forest predictions at all 3 timestamps. This does not necessarily mean that other features are not important because some of these features may contain similar information to gold difference.
+
+Overall, the results suggest that gold difference is an important predictor of winning and that the final outcome generally becomes more predictable as the match progresses. However, this does not mean that the outcome of a match is already decided at 15 minutes.
+
+### Limitations and Future Work
+
+The biggest limitation of this project is the size of the dataset. Although I used 900 observations, these observations only came from 300 unique matches. The final test set only contained 45 matches.
+
+Another limitation is that all matches came from the same patch. The results may be different for other patches or different groups of players. Some matches may also share players, meaning that the matches may not be completely independent. The confidence intervals do not account for this possible dependence.
+
+The timeline snapshots are also slightly after the exact 5, 10, and 15 minute timestamps, with a maximum difference of 420 milliseconds.
+
+If I were to continue this project, I would collect more matches, evaluate the models on different patches and ranks, and investigate whether role specific gold differences provide additional information. I would also investigate how predicted win probabilities change throughout individual matches.
+
+### Reproducing the Project
+
+The processed dataset and saved match splits are included in the repository. This allows the modeling experiments to be reproduced without collecting new matches from the Riot Games API.
+
+The project was developed using Python 3.14 on an Apple Silicon Mac.
+
+Clone the repository:
+
+```bash
+git clone https://github.com/matthewrhee02/league-win-predictor.git
+cd league-win-predictor
+```
+
+Create and activate a virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+On macOS, XGBoost may require OpenMP. If Homebrew is installed, run:
+
+```bash
+brew install libomp
+```
+
+Install the required packages:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+The following Makefile commands can be used:
+
+| Command | Description |
+|---|---|
+| `make validate` | Validates the processed dataset |
+| `make models` | Reproduces the validation model results |
+| `make plots` | Generates the project visualizations |
+| `make final` | Reproduces the final test results and confidence intervals |
+| `make all` | Runs validation, models, and visualizations |
+
+The original raw match and timeline files are not included in the repository. The data collection and feature extraction scripts are included, but reproducing the original data collection and raw data audits requires additional data and access to the Riot Games API where applicable. Riot API credentials are not included in the repository.
