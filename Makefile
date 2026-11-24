@@ -1,6 +1,6 @@
 PYTHON = python
 
-.PHONY: all validate models plots
+.PHONY: all validate models plots final
 
 all: validate models plots
 
@@ -18,3 +18,7 @@ plots:
 	$(PYTHON) src/plot_results.py
 	$(PYTHON) src/plot_gold_data.py
 	$(PYTHON) src/feature_importance.py
+	$(PYTHON) src/plot_final_results.py
+
+final:
+	$(PYTHON) src/final_test.py
