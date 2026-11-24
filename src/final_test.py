@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import pandas as pd
+from math import sqrt
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
@@ -33,6 +34,36 @@ features = [
     "first_dragon"
 ]
 
+def show_confidence_interval(actual, predictions):
+
+    total = len(actual)
+
+    correct = np.sum(
+        np.array(actual) == np.array(predictions)
+    )
+
+    accuracy = correct / total
+
+    z = 1.96
+
+    denominator = 1 + z ** 2 / total
+
+    center = (
+        accuracy + z ** 2 / (2 * total)
+    ) / denominator
+
+    margin = (
+        z * sqrt(
+            accuracy * (1 - accuracy) / total
+            + z ** 2 / (4 * total ** 2)
+        )
+    ) / denominator
+
+    lower = (center - margin) * 100
+    upper = (center + margin) * 100
+
+    print("Correct games:", correct, "/", total)
+    print("95% CI:", round(lower, 2), "to", round(upper, 2), "%")
 
 def show_results(name, actual, predictions, probabilities):
 
@@ -50,6 +81,8 @@ def show_results(name, actual, predictions, probabilities):
     if len(np.unique(actual)) == 2:
         auc = roc_auc_score(actual, probabilities)
         print("ROC-AUC:", round(auc, 4))
+
+    show_confidence_interval(actual, predictions)
 
 
 for minute in [5, 10, 15]:
@@ -78,7 +111,6 @@ for minute in [5, 10, 15]:
     print("Training games:", len(train_data))
     print("Test games:", len(test_data))
 
-    # Majority baseline
     if y_train.mean() >= 0.5:
         majority_prediction = 1
     else:
@@ -95,8 +127,8 @@ for minute in [5, 10, 15]:
         round(accuracy_score(y_test, majority_predictions) * 100, 2),
         "%"
     )
+    show_confidence_interval(y_test, majority_predictions)
 
-    # Gold baseline
     gold_predictions = []
 
     for gold in test_data["gold_diff"]:
@@ -115,8 +147,8 @@ for minute in [5, 10, 15]:
         round(accuracy_score(y_test, gold_predictions) * 100, 2),
         "%"
     )
+    show_confidence_interval(y_test, gold_predictions)
 
-    # Gold-only Logistic Regression
     gold_features = ["gold_diff"]
 
     gold_scaler = StandardScaler()
@@ -143,7 +175,6 @@ for minute in [5, 10, 15]:
         probabilities
     )
 
-    # Full Logistic Regression
     scaler = StandardScaler()
 
     X_train_scaled = scaler.fit_transform(X_train)
@@ -163,7 +194,6 @@ for minute in [5, 10, 15]:
         probabilities
     )
 
-    # Random Forest
     forest_model = RandomForestClassifier(
         n_estimators=100,
         max_depth=5,
@@ -183,7 +213,6 @@ for minute in [5, 10, 15]:
         probabilities
     )
 
-    # XGBoost
     xgboost_model = XGBClassifier(
         n_estimators=100,
         max_depth=3,
